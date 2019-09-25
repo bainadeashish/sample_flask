@@ -1,0 +1,53 @@
+version: '3'
+services:
+  backend:
+    build: .
+    image: backend
+    volumes:
+     - .:/code
+    ports:
+     - 5000:5000
+  rabbitmq:
+    image: rabbitmq:3.6.1-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=rabbitmq
+      - RABBITMQ_DEFAULT_PASS=rabbitmq
+    restart: always
+    ports:
+      - 15672:15672
+      - 5672:5672
+  flower:
+    image: mher/flower
+    environment:
+      - AMQP_HOST=rabbitmq
+      - FLOWER_PORT=5555
+      - AMQP_USERNAME=rabbitmq
+      - AMQP_PASSWORD=rabbitmq
+      - AMQP_ADMIN_USERNAME=rabbitmq
+      - AMQP_ADMIN_PASSWORD=rabbitmq
+      - AMQP_ADMIN_HOST=rabbitmq
+    links:
+     - rabbitmq:rabbitmq
+    depends_on:
+     - rabbitmq
+    ports:
+     - 5555:5555
+    restart: always
+    command: flower --address=0.0.0.0 --port=5555 --broker=amqp://rabbitmq:rabbitmq@rabbitmq:5672/
+  minio:
+    hostname: minio
+    image: minio/minio
+    ports:
+      - '127.0.0.1:9000:9000'
+    volumes:
+      - /data/miniodata:/data
+    networks:
+      - default
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+    command: server /data
+volumes:
+  miniodata:
+networks:
+  default:
