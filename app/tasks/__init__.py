@@ -27,9 +27,10 @@ celery = make_celery(app)
 
 
 @celery.task
-def sample_task(start_date, end_date):
+def sample_task(start_date, end_date, epoch):
     print("inside task:{0}".format(start_date))
     bucket_name = Configuration.bucket_name
+    epoch = str(epoch)
 
     s3 = boto3.resource('s3',
                         endpoint_url=Configuration.endpoint_url,
@@ -38,10 +39,13 @@ def sample_task(start_date, end_date):
                         config=Config(signature_version='s3v4'),
                         region_name=Configuration.region_name)
 
-    sdate = date(2019, 9, 21)  # start date
-    edate = date(2019, 9, 23)  # end date
+    sdate = start_date  # start date
+    edate = end_date  # end date
     file_matters = []
+    type(edate)
+    print(edate)
     delta = edate - sdate  # as timedelta
+    print(delta)
 
     for i in range(delta.days + 1):
         day = sdate + timedelta(days=i)
@@ -54,7 +58,7 @@ def sample_task(start_date, end_date):
     appended_df = []
     for file_object in s3.Bucket(bucket_name).objects.all():
 
-        if file_object.key[:10] in file_matters:
+        if file_object.key[:10] in file_matters and 'log' in file_object.key:
             print(file_object.key)
             s3.Bucket(bucket_name).download_file(file_object.key, '/data/{0}'.format(file_object.key))
             df = pd.read_csv(r'/data/{0}'.format(file_object.key), header=None, sep=" ", error_bad_lines=False)
@@ -63,8 +67,8 @@ def sample_task(start_date, end_date):
         concat_df = pd.concat(appended_df)
         concat_df = concat_df.sort_values(by=0)
         concat_df.reset_index()
-        concat_df.to_csv('/data/{0}_{1}.csv'.format(sdate, edate), index=False)
-        s3.Bucket(bucket_name).upload_file('/data/{0}_{1}.csv'.format(sdate, edate), '{0}_{1}.csv'.format(sdate, edate))
+        concat_df.to_csv('/data/{0}_{1}_{2}.csv'.format(sdate, edate, epoch), index=False)
+        s3.Bucket(bucket_name).upload_file('/data/{0}_{1}_{2}.csv'.format(sdate, edate, epoch), '{0}_{1}_{2}.csv'.format(sdate, edate, epoch))
 
         print("Data for dates between {0} and {1}".format(sdate, edate))
     except ValueError:

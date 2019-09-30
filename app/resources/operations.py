@@ -1,7 +1,9 @@
 from flask_restful import Resource
+from flask import jsonify
 from flask_restful import reqparse
 from app.tasks import sample_task, celery
 from flask_restplus import inputs
+import time
 
 
 class sample(Resource):
@@ -15,6 +17,8 @@ class sample(Resource):
 
     def get(self):
         args = self.reqparse.parse_args()
-        # sample_task(args['start_date'], args['end_date'])
-        celery.send_task('app.tasks.sample_task', [args['start_date'], args['end_date']])
-        return "hello"
+        epoch = time.time()
+        # sample_task(args['start_date'], args['end_date'], epoch)
+        celery.send_task('app.tasks.sample_task', [args['start_date'], args['end_date'], epoch])
+        return jsonify(http_status_code=200, msg='File merged & can be found with name {0}_{1}_{2}.csv'.format(args['start_date'],
+                                                                                                               args['end_date'], epoch))
