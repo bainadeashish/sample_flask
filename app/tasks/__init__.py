@@ -5,6 +5,7 @@ from botocore.client import Config
 import pandas as pd
 from datetime import date, timedelta
 from app.config import Configuration
+from datetime import datetime
 
 
 def make_celery(app):
@@ -29,6 +30,8 @@ celery = make_celery(app)
 @celery.task
 def sample_task(start_date, end_date, epoch):
     print("inside task:{0}".format(start_date))
+    sdate = start_date  # start date
+    edate = end_date  # end date
     bucket_name = Configuration.bucket_name
     epoch = str(epoch)
 
@@ -39,13 +42,10 @@ def sample_task(start_date, end_date, epoch):
                         config=Config(signature_version='s3v4'),
                         region_name=Configuration.region_name)
 
-    sdate = start_date  # start date
-    edate = end_date  # end date
+    sdate = datetime.strptime(start_date[:10], '%Y-%m-%d')  # start date
+    edate = datetime.strptime(end_date[:10], '%Y-%m-%d')  # end date
     file_matters = []
-    type(edate)
-    print(edate)
     delta = edate - sdate  # as timedelta
-    print(delta)
 
     for i in range(delta.days + 1):
         day = sdate + timedelta(days=i)
