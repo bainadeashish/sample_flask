@@ -10,7 +10,7 @@ Flask-RESTful==0.3.7
 Flask-Script==2.0.6
 fsspec==0.5.1
 itsdangerous==1.1.0
-Jinja2==2.10.1
+Jinja2==2.11.3
 jmespath==0.9.4
 MarkupSafe==1.1.1
 numpy==1.17.2
