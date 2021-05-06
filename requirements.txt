@@ -5,7 +5,7 @@ Click==7.0
 docutils==0.15.2
 Faker==2.0.1
 Flask==1.1.1
-Flask-Cors==3.0.8
+Flask-Cors==3.0.9
 Flask-RESTful==0.3.7
 Flask-Script==2.0.6
 fsspec==0.5.1
